@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>🛡️ EthioMarket Admin</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{--green:#0a7e3d;--gold:#c9a84c;--dark:#0f172a;--card:#1e293b;--gray:#94a3b8;--red:#ef4444;--blue:#3b82f6;--radius:16px}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif}
+body{background:var(--dark);color:#f8fafc;min-height:100vh}
+.admin-header{background:var(--card);padding:1rem 1.2rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:8px}
+.admin-header h1{font-size:1.2rem;color:var(--green)}
+.admin-header h1 span{color:var(--gold)}
+.admin-nav{display:flex;gap:8px;flex-wrap:wrap}
+.admin-nav button{padding:8px 16px;border-radius:50px;border:1px solid rgba(255,255,255,.1);background:transparent;color:var(--gray);font-weight:600;font-size:.8rem;cursor:pointer}
+.admin-nav button.active,.admin-nav button:hover{background:var(--green);color:#fff;border-color:var(--green)}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;padding:1.2rem}
+.stat-card{background:var(--card);border-radius:var(--radius);padding:1.2rem;border-left:4px solid var(--green)}
+.stat-card.gold{border-left-color:var(--gold)}
+.stat-card.blue{border-left-color:var(--blue)}
+.stat-card.red{border-left-color:var(--red)}
+.stat-card .stat-icon{font-size:1.6rem;margin-bottom:.4rem}
+.stat-card .stat-value{font-size:1.5rem;font-weight:800}
+.stat-card .stat-label{color:var(--gray);font-size:.75rem;margin-top:.3rem}
+.content-section{padding:0 1.2rem 1.5rem;display:none}
+.content-section.active{display:block}
+.section-title{font-size:1.1rem;font-weight:700;margin-bottom:1rem}
+.data-table{width:100%;background:var(--card);border-radius:var(--radius);overflow-x:auto}
+.data-table table{width:100%;border-collapse:collapse;min-width:500px}
+.data-table th,.data-table td{padding:.9rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.05);font-size:.82rem}
+.data-table th{color:var(--gray);font-size:.7rem;text-transform:uppercase;letter-spacing:1px}
+.badge{padding:3px 10px;border-radius:50px;font-size:.68rem;font-weight:700;text-transform:uppercase}
+.badge.pending{background:rgba(245,158,11,.2);color:#f59e0b}
+.badge.shipped{background:rgba(59,130,246,.2);color:#3b82f6}
+.badge.delivered{background:rgba(16,185,129,.2);color:#10b981}
+.badge.cancelled{background:rgba(239,68,68,.2);color:#ef4444}
+.badge.open{background:rgba(59,130,246,.2);color:#3b82f6}
+.badge.closed{background:rgba(148,163,184,.2);color:#94a3b8}
+.fee-amount{color:var(--gold);font-weight:700}
+.login-overlay{position:fixed;inset:0;background:var(--dark);display:flex;align-items:center;justify-content:center;z-index:999}
+.login-box{background:var(--card);padding:2rem;border-radius:var(--radius);width:92%;max-width:380px;text-align:center}
+.login-box h2{color:var(--green);margin-bottom:1.2rem}
+.login-box input{width:100%;padding:12px;margin-bottom:.8rem;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:var(--dark);color:#fff;outline:none}
+.login-box button{width:100%;padding:12px;border:none;border-radius:10px;background:var(--green);color:#fff;font-weight:700;cursor:pointer}
+.login-error{color:var(--red);font-size:.8rem;margin-bottom:.8rem}
+.btn-close-ticket{background:var(--red);color:#fff;border:none;padding:4px 12px;border-radius:6px;cursor:pointer;font-size:.75rem}
+</style>
+</head>
+<body>
+
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-box">
+    <h2>🛡️ Admin Login</h2>
+    <div class="login-error" id="loginError"></div>
+    <input type="email" id="adminEmail" placeholder="Admin Email" value="admin@ethiomarket.com"/>
+    <input type="password" id="adminPassword" placeholder="Password"/>
+    <button onclick="adminLogin()">Access Dashboard</button>
+  </div>
+</div>
+
+<div id="dashboard" style="display:none">
+  <header class="admin-header">
+    <h1>Ethio<span>Market</span> Admin</h1>
+    <nav class="admin-nav">
+      <button class="active" onclick="showSection('stats',this)">📊 Stats</button>
+      <button onclick="showSection('orders',this)">🛒 Orders</button>
+      <button onclick="showSection('tickets',this)">🎫 Tickets</button>
+      <button onclick="logout()" style="border-color:var(--red);color:var(--red)">Logout</button>
+    </nav>
+  </header>
+
+  <div id="stats" class="content-section active">
+    <div class="stats-grid">
+      <div class="stat-card gold"><div class="stat-icon">💰</div><div class="stat-value" id="statRevenue">ETB 0</div><div class="stat-label">Total Commission (5%)</div></div>
+      <div class="stat-card"><div class="stat-icon">🛒</div><div class="stat-value" id="statOrders">0</div><div class="stat-label">Total Orders</div></div>
+      <div class="stat-card blue"><div class="stat-icon">👥</div><div class="stat-value" id="statUsers">0</div><div class="stat-label">Users</div></div>
+      <div class="stat-card red"><div class="stat-icon">🎫</div><div class="stat-value" id="statTickets">0</div><div class="stat-label">Open Tickets</div></div>
+    </div>
+  </div>
+
+  <div id="orders" class="content-section">
+    <h2 class="section-title">🛒 All Orders & Fees</h2>
+    <div class="data-table"><table>
+      <thead><tr><th>Order</th><th>Customer</th><th>Total</th><th>Fee (5%)</th><th>Status</th><th>Date</th></tr></thead>
+      <tbody id="ordersTableBody"></tbody>
+    </table></div>
+  </div>
+
+  <div id="tickets" class="content-section">
+    <h2 class="section-title">🎫 Support Tickets</h2>
+    <div class="data-table"><table>
+      <thead><tr><th>ID</th><th>User</th><th>Subject</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody id="ticketsTableBody"></tbody>
+    </table></div>
+  </div>
+</div>
+
+<script>
+const API = window.location.origin + '/api';
+let adminToken = localStorage.getItem('ethio_admin_token');
+
+if (adminToken) {
+  document.getElementById('loginOverlay').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  loadDashboard();
+}
+
+async function adminLogin() {
+  const email = document.getElementById('adminEmail').value;
+  const password = document.getElementById('adminPassword').value;
+  try {
+    const res = await fetch(`${API}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+    adminToken = data.token;
+    localStorage.setItem('ethio_admin_token', adminToken);
+    document.getElementById('loginOverlay').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    loadDashboard();
+  } catch (err) {
+    document.getElementById('loginError').textContent = err.message;
+  }
+}
+
+function logout() {
+  localStorage.removeItem('ethio_admin_token');
+  location.reload();
+}
+
+function showSection(id, btn) {
+  document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.admin-nav button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+async function loadDashboard() {
+  try {
+    const h = { 'Authorization': `Bearer ${adminToken}` };
+
+    const stats = await (await fetch(`${API}/admin/stats`, { headers: h })).json();
+    document.getElementById('statRevenue').textContent = `ETB ${(stats.totalRevenue||0).toFixed(2)}`;
+    document.getElementById('statOrders').textContent = stats.totalOrders || 0;
+    document.getElementById('statUsers').textContent = stats.totalUsers || 0;
+    document.getElementById('statTickets').textContent = stats.openTickets || 0;
+
+    const orders = await (await fetch(`${API}/admin/orders`, { headers: h })).json();
+    document.getElementById('ordersTableBody').innerHTML = orders.map(o => `
+      <tr>
+        <td>#${o._id.slice(-8)}</td>
+        <td>${o.user ? o.user.name : 'Unknown'}</td>
+        <td>ETB ${Number(o.total).toLocaleString()}</td>
+        <td class="fee-amount">ETB ${(o.platformFee||0).toFixed(2)}</td>
+        <td><span class="badge ${o.status}">${o.status}</span></td>
+        <td>${new Date(o.createdAt).toLocaleDateString()}</td>
+      </tr>`).join('') || '<tr><td colspan="6">No orders yet</td></tr>';
+
+    const tickets = await (await fetch(`${API}/admin/tickets`, { headers: h })).json();
+    document.getElementById('ticketsTableBody').innerHTML = tickets.map(t => `
+      <tr>
+        <td>#${t._id.slice(-6)}</td>
+        <td>${t.user ? t.user.name : 'Unknown'}</td>
+        <td>${t.subject}</td>
+        <td><span class="badge ${t.status}">${t.status}</span></td>
+        <td>${t.status === 'open' ? `<button class="btn-close-ticket" onclick="closeTicket('${t._id}')">Close</button>` : '—'}</td>
+      </tr>`).join('') || '<tr><td colspan="5">No tickets</td></tr>';
+  } catch (err) {
+    alert('Failed to load dashboard — check login');
+  }
+}
+
+async function closeTicket(id) {
+  await fetch(`${API}/admin/tickets/${id}/close`, {
+    method: 'PUT',
+    headers: { 'Authorization': `Bearer ${adminToken}` }
+  });
+  loadDashboard();
+}
+</script>
+</body>
+  </html>
