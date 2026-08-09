@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>🇪🇹 EthioMarket — Buy & Sell Across Ethiopia</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"/>
+<style>
+:root{
+  --green-dark:#0b4a31; --green:#0e6b47; --mint:#7be0ad; --mint-soft:#a7f3d0;
+  --bg:#f1f2f3; --white:#fff; --gray:#6b7280; --star:#d97706; --red:#ef4444;
+  --radius:14px;
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif}
+body{background:var(--bg);color:#111827;padding-bottom:70px}
+button{cursor:pointer;border:none;font-family:inherit}
+img{max-width:100%;display:block}
+.top-header{background:var(--green);padding:1rem 1rem 1.5rem;color:#fff}
+.brand-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
+.brand{font-size:1.3rem;font-weight:800;color:var(--mint)}
+.brand span{color:#fff}
+.cart-btn{background:none;color:#fff;font-size:1.2rem;position:relative}
+.cart-badge{position:absolute;top:-8px;right:-10px;background:var(--red);color:#fff;
+  font-size:.65rem;font-weight:700;width:18px;height:18px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center}
+.search-row{display:flex;gap:8px;margin-bottom:1.2rem}
+.search-row input{flex:1;padding:14px 16px;border:none;border-radius:10px;font-size:.95rem;outline:none}
+.search-row button{background:var(--mint);color:#0b3d2a;font-weight:700;padding:0 22px;border-radius:10px}
+.hero h1{font-size:1.5rem;font-weight:800;line-height:1.3;margin-bottom:.5rem}
+.hero p{color:var(--mint-soft);font-size:.9rem;margin-bottom:1.2rem}
+.hero-btns{display:flex;gap:10px;flex-wrap:wrap}
+.btn-mint{background:var(--mint);color:#0b3d2a;font-weight:700;padding:12px 22px;border-radius:10px}
+.btn-outline{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.5);padding:12px 22px;border-radius:10px;font-weight:600}
+.payments-strip{background:var(--white);padding:.8rem 1rem;border-bottom:1px solid #e5e7eb}
+.payments-strip .label{font-size:.75rem;color:var(--gray);display:block;margin-bottom:.5rem}
+.pills{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.pill{background:#f3f4f6;border-radius:50px;padding:6px 14px;font-size:.8rem;font-weight:600;
+  display:flex;align-items:center;gap:6px;white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+main{padding:1rem;max-width:900px;margin:0 auto}
+.sec-label{font-size:.8rem;letter-spacing:1px;color:var(--gray);font-weight:700;margin:1.2rem 0 .8rem}
+.view{display:none}
+.view.active{display:block}
+.cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.cat-card{background:var(--white);border-radius:12px;padding:16px 8px;text-align:center;
+  font-size:.85rem;font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.06);transition:.2s}
+.cat-card:active{transform:scale(.96)}
+.prod-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.prod-card{background:var(--white);border-radius:12px;overflow:hidden;
+  box-shadow:0 1px 3px rgba(0,0,0,.06);position:relative;display:flex;flex-direction:column}
+.verified-badge{position:absolute;top:8px;left:8px;background:var(--green);color:#fff;
+  font-size:.7rem;font-weight:700;padding:4px 12px;border-radius:50px;z-index:2}
+.prod-img{height:150px;display:flex;align-items:center;justify-content:center;font-size:3.5rem}
+.prod-img img{width:100%;height:100%;object-fit:cover}
+.prod-body{padding:.9rem;display:flex;flex-direction:column;gap:6px;flex:1}
+.prod-body h3{font-size:.95rem;font-weight:700}
+.price-row{display:flex;align-items:baseline;gap:8px}
+.price-row .now{color:var(--green);font-weight:800;font-size:1.05rem}
+.price-row .old{color:#9ca3af;text-decoration:line-through;font-size:.8rem}
+.rating{color:var(--star);font-size:.8rem}
+.btn-add-cart{margin-top:auto;background:var(--green-dark);color:#fff;font-weight:700;
+  padding:11px;border-radius:10px;width:100%;font-size:.9rem}
+.btn-add-cart:active{transform:scale(.97)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:10px}
+.chip{background:var(--white);border-radius:50px;padding:8px 16px;font-size:.8rem;font-weight:600;white-space:nowrap}
+.chip.active{background:var(--green);color:#fff}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--white);
+  display:flex;justify-content:space-around;padding:10px 0 12px;
+  box-shadow:0 -2px 10px rgba(0,0,0,.06);z-index:100}
+.bottom-nav button{background:none;color:var(--gray);font-size:.72rem;
+  display:flex;flex-direction:column;align-items:center;gap:4px;position:relative;flex:1}
+.bottom-nav button i{font-size:1.15rem}
+.bottom-nav button.active{color:var(--green-dark);font-weight:700}
+.nav-dot{position:absolute;top:0;right:22%;width:7px;height:7px;background:var(--red);border-radius:50%}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;
+  display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:.3s}
+.overlay.open{opacity:1;pointer-events:all}
+.modal{background:#fff;border-radius:16px;padding:1.8rem 1.4rem;width:92%;max-width:420px;
+  max-height:88vh;overflow-y:auto;transform:translateY(20px);transition:.3s}
+.overlay.open .modal{transform:translateY(0)}
+.modal h2{font-size:1.3rem;margin-bottom:.3rem;color:var(--green)}
+.modal .sub{color:var(--gray);font-size:.85rem;margin-bottom:1rem}
+.modal .close-btn{float:right;background:none;font-size:1.4rem;color:var(--gray)}
+.modal input,.modal textarea,.modal select{width:100%;padding:12px;border:2px solid #e5e7eb;
+  border-radius:10px;margin-bottom:.8rem;font-size:.9rem;outline:none;font-family:inherit}
+.modal input:focus,.modal textarea:focus{border-color:var(--green)}
+.btn-full{width:100%;background:var(--green);color:#fff;font-weight:700;padding:13px;border-radius:10px}
+.error-msg{color:var(--red);font-size:.8rem;text-align:center;min-height:18px;margin-bottom:.5rem}
+.toggle-text{text-align:center;font-size:.85rem;color:var(--gray);margin-top:.8rem}
+.toggle-text a{color:var(--green);font-weight:700;cursor:pointer}
+.cart-sidebar{position:fixed;top:0;right:0;bottom:0;width:min(400px,92vw);background:#fff;
+  z-index:300;transform:translateX(100%);transition:.3s;display:flex;flex-direction:column;padding:1.2rem}
+.cart-sidebar.open{transform:translateX(0)}
+.cart-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
+.cart-items{flex:1;overflow-y:auto}
+.cart-item{display:flex;gap:10px;align-items:center;padding:.7rem 0;border-bottom:1px solid #f3f4f6}
+.cart-item-icon{width:46px;height:46px;border-radius:10px;background:#e8f5ee;
+  display:flex;align-items:center;justify-content:center;font-size:1.4rem;overflow:hidden;flex-shrink:0}
+.cart-item-info{flex:1}
+.cart-item-info h4{font-size:.85rem}
+.qty-controls{display:flex;align-items:center;gap:8px}
+.qty-controls button{width:26px;height:26px;border-radius:50%;border:1px solid #ddd;background:#fff;font-weight:700}
+.cart-footer{border-top:2px solid #f3f4f6;padding-top:1rem}
+.cart-total{display:flex;justify-content:space-between;font-weight:800;font-size:1.1rem;margin-bottom:.8rem}
+.cart-total .amount{color:var(--green)}
+.payment-methods{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:1rem 0}
+.payment-method{padding:14px 8px;border:2px solid #e5e7eb;border-radius:12px;background:#f9fafb;
+  font-weight:600;font-size:.82rem;display:flex;flex-direction:column;align-items:center;gap:6px}
+.payment-method i{font-size:1.4rem}
+.payment-method:active{border-color:var(--green)}
+.amount-display{font-size:1.8rem;font-weight:800;color:var(--green);margin:.8rem 0}
+.payment-status{min-height:40px;font-size:.85rem;color:var(--gray);text-align:center}
+.btn-whatsapp{width:100%;background:#25d366;color:#fff;font-weight:700;padding:12px;
+  border-radius:10px;margin-top:8px;display:none}
+.chat-box{background:#fff;border-radius:12px;height:60vh;display:flex;flex-direction:column;overflow:hidden}
+.chat-messages{flex:1;padding:1rem;overflow-y:auto;display:flex;flex-direction:column;gap:8px;background:#f9fafb}
+.msg{max-width:80%;padding:10px 14px;border-radius:12px;font-size:.88rem;white-space:pre-wrap}
+.msg.user{background:var(--green);color:#fff;align-self:flex-end}
+.msg.ai{background:#fff;border:1px solid #eee;align-self:flex-start}
+.chat-input-row{display:flex;gap:8px;padding:.8rem;background:#fff;border-top:1px solid #eee}
+.chat-input-row input{flex:1;padding:10px 14px;border:1px solid #ddd;border-radius:50px;outline:none;margin:0}
+.chat-input-row button{width:42px;height:42px;border-radius:50%;background:var(--green);color:#fff}
+.profile-card{background:#fff;border-radius:12px;padding:1.5rem;text-align:center;margin-bottom:1rem}
+.avatar{width:64px;height:64px;border-radius:50%;background:var(--green);color:#fff;
+  font-size:1.6rem;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto .8rem}
+.order-card{background:#fff;border-radius:12px;padding:1rem;margin-bottom:.8rem;border-left:5px solid var(--green)}
+.order-status{font-size:.7rem;font-weight:700;text-transform:uppercase;padding:3px 10px;border-radius:50px;background:#e8f5ee;color:var(--green)}
+.toast-container{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:600;display:flex;flex-direction:column;gap:8px;align-items:center}
+.toast{background:#111827;color:#fff;padding:12px 22px;border-radius:50px;font-size:.85rem;font-weight:600;animation:fadeUp .3s}
+.toast.success{background:var(--green)} .toast.error{background:var(--red)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+body.dark{background:#0f172a;color:#e2e8f0}
+body.dark .top-header{background:#06371f}
+body.dark .payments-strip,body.dark .cat-card,body.dark .prod-card,body.dark .modal,
+body.dark .cart-sidebar,body.dark .profile-card,body.dark .order-card,body.dark .bottom-nav,
+body.dark .search-row input,body.dark .pill,body.dark .chip,body.dark .chat-box{background:#1e293b;color:#e2e8f0}
+body.dark .search-row input{color:#e2e8f0}
+body.dark .prod-body h3,body.dark .cart-item-info h4{color:#e2e8f0}
+body.dark .bottom-nav button{color:#94a3b8}
+body.dark .bottom-nav button.active{color:#7be0ad}
+body.dark .modal input,body.dark .modal textarea,body.dark .modal select{background:#0f172a;color:#e2e8f0;border-color:#334155}
+body.dark .chat-messages{background:#0f172a}
+body.dark .msg.ai{background:#1e293b;color:#e2e8f0;border-color:#334155}
+body.dark .cart-item,body.dark .cart-footer{border-color:#334155}
+@media(min-width:768px){.prod-grid{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+
+<header class="top-header">
+  <div class="brand-row">
+    <div class="brand">Ethio<span>Market</span></div>
+    <div style="display:flex;gap:14px;align-items:center">
+      <button class="cart-btn" id="themeBtn"><i class="fas fa-moon"></i></button>
+      <button class="cart-btn" id="langBtn" style="font-size:.8rem;font-weight:800">አማ</button>
+      <button class="cart-btn" id="cartBtn"><i class="fas fa-shopping-bag"></i><span class="cart-badge" id="cartBadge">0</span></button>
+    </div>
+  </div>
+  <div class="search-row">
+    <input id="searchInput" placeholder="Search products, sellers..."/>
+    <button id="voiceBtn" style="background:#0b4a31;color:#7be0ad;border:1px solid #7be0ad;border-radius:10px;width:48px;font-size:1.1rem">🎤</button>
+    <button id="searchBtn">Search</button>
+  </div>
+  <div class="hero">
+    <h1>Buy & sell anything — across Ethiopia & the world</h1>
+    <p>Dropshipping · All Ethiopian banks · Passport verified</p>
+    <div class="hero-btns">
+      <button class="btn-mint" id="heroSellBtn">Start selling ↗</button>
+      <button class="btn-outline" id="heroBrowseBtn">Browse stores</button>
+    </div>
+  </div>
+</header>
+
+<div class="payments-strip">
+  <span class="label">Accepted payments</span>
+  <div class="pills">
+    <span class="pill"><i class="dot" style="background:#fbbf24"></i>CBE</span>
+    <span class="pill"><i class="dot" style="background:#ef4444"></i>Awash</span>
+    <span class="pill"><i class="dot" style="background:#2563eb"></i>Dashen</span>
+    <span class="pill"><i class="dot" style="background:#22c55e"></i>Telebirr</span>
+    <span class="pill"><i class="dot" style="background:#0d9488"></i>Intl cards</span>
+  </div>
+</div>
+
+<main>
+  <section id="view-home" class="view active">
+    <h2 class="sec-label">CATEGORIES</h2>
+    <div class="cat-grid" id="catGrid"></div>
+    <h2 class="sec-label">FEATURED PRODUCTS</h2>
+    <div class="prod-grid" id="featuredGrid"></div>
+  </section>
+
+  <section id="view-explore" class="view">
+    <h2 class="sec-label">EXPLORE ALL</h2>
+    <div class="chips" id="catChips"></div>
+    <div class="prod-grid" id="exploreGrid"></div>
+  </section>
+
+  <section id="view-chat" class="view">
+    <h2 class="sec-label">MESSAGES — AI ASSISTANT</h2>
+    <div class="chat-box">
+      <div class="chat-messages" id="chatMessages">
+        <div class="msg ai">👋 Selam! I'm your EthioMarket AI. Try: "Check my order status", "Cancel my order", or "I need a human".</div>
+      </div>
+      <div class="chat-input-row">
+        <input id="chatInput" placeholder="Ask me anything..."/>
+        <button id="chatSend"><i class="fas fa-paper-plane"></i></button>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-profile" class="view">
+    <h2 class="sec-label">PROFILE</h2>
+    <div id="profileContent"></div>
+  </section>
+</main>
+
+<nav class="bottom-nav">
+  <button data-view="home" class="active"><i class="fas fa-home"></i>Home</button>
+  <button data-view="explore"><i class="fas fa-compass"></i>Explore</button>
+  <button data-view="sell"><i class="fas fa-plus-circle"></i>Sell</button>
+  <button data-view="chat"><i class="fas fa-comment-dots"></i>Messages<span class="nav-dot"></span></button>
+  <button data-view="profile"><i class="fas fa-user"></i>Profile</button>
+</nav>
+
+<div class="cart-sidebar" id="cartSidebar">
+  <div class="cart-header">
+    <h2 style="font-size:1.2rem">🛍️ Your Cart</h2>
+    <button id="cartClose" style="background:none;font-size:1.5rem;color:#6b7280">&times;</button>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-footer">
+    <div class="cart-total"><span>Total</span><span class="amount" id="cartTotal">ETB 0</span></div>
+    <button class="btn-full" id="checkoutBtn">Proceed to Checkout</button>
+  </div>
+</div>
+
+<div class="overlay" id="authOverlay">
+  <div class="modal">
+    <button class="close-btn" id="authClose">&times;</button>
+    <h2 id="authTitle">Welcome Back</h2>
+    <p class="sub" id="authSub">Sign in to your EthioMarket account.</p>
+    <div class="error-msg" id="authError"></div>
+    <form id="authForm">
+      <input type="text" id="authName" placeholder="Full Name" style="display:none"/>
+      <input type="email" id="authEmail" placeholder="Email address" required/>
+      <input type="password" id="authPassword" placeholder="Password" required minlength="6"/>
+      <button type="submit" class="btn-full" id="authSubmit">Sign In</button>
+    </form>
+    <div class="toggle-text"><span id="authToggleText">Don't have an account?</span> <a id="authToggleLink">Create one</a></div>
+  </div>
+</div>
+
+<div class="overlay" id="sellOverlay">
+  <div class="modal">
+    <button class="close-btn" id="sellClose">&times;</button>
+    <h2>🏪 Sell Your Product</h2>
+    <p class="sub">List on EthioMarket — 5% commission per sale</p>
+    <div class="error-msg" id="sellError"></div>
+    <form id="sellForm">
+      <input type="file" id="sellImage" accept="image/*"/>
+      <div id="imagePreview" style="margin-bottom:.8rem"></div>
+      <input type="text" id="sellName" placeholder="Product name" required/>
+      <textarea id="sellDesc" placeholder="Description" required></textarea>
+      <input type="number" id="sellPrice" placeholder="Price (ETB)" min="1" required/>
+      <select id="sellCategory" required>
+        <option value="">Select category</option>
+        <option>Fashion</option><option>Electronics</option><option>Home</option>
+        <option>Food</option><option>Auto</option><option>Books</option><option>Tools</option>
+      </select>
+      <button type="submit" class="btn-full">📤 Publish Listing</button>
+    </form>
+  </div>
+</div>
+
+<div class="overlay" id="paymentOverlay">
+  <div class="modal" style="text-align:center">
+    <h2>💳 Choose Payment Method</h2>
+    <div class="amount-display" id="paymentAmount">ETB 0</div>
+    <div class="payment-methods" id="paymentMethods">
+      <button class="payment-method" data-method="cbe"><i class="fas fa-university" style="color:#fbbf24"></i>CBE</button>
+      <button class="payment-method" data-method="awash"><i class="fas fa-landmark" style="color:#ef4444"></i>Awash</button>
+      <button class="payment-method" data-method="telebirr"><i class="fas fa-mobile-alt" style="color:#22c55e"></i>Telebirr</button>
+      <button class="payment-method" data-method="chapa"><i class="fas fa-credit-card" style="color:#0d9488"></i>Chapa</button>
+    </div>
+    <div class="payment-status" id="paymentStatus"></div>
+    <button class="btn-full" id="confirmPaymentBtn" style="display:none">✅ Confirm Payment</button>
+    <button class="btn-whatsapp" id="whatsappBtn"><i class="fab fa-whatsapp"></i> Send Order via WhatsApp</button>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+const state = { products: [], cart: [], orders: [], user: null, token: null, isLogin: true, lastOrder: null, filter: null, search: '', lang: 'en' };
+const $ = s => document.querySelector(s);
+const API = window.location.origin + '/api';
+
+function toast(msg, type='info'){
+  const el = document.createElement('div');
+  el.className = `toast ${type}`; el.textContent = msg;
+  $('#toastContainer').appendChild(el);
+  setTimeout(()=>el.remove(), 3000);
+}
+
+function getMockProducts(){ return [
+  { _id:'1', name:'Habesha Dress', description:'Traditional handwoven cotton dress', price:2200, oldPrice:2800, rating:4.9, verified:true, image:'👗', category:'Fashion' },
+  { _id:'2', name:'Wireless Headphones', description:'Bluetooth 5.3, 40h battery', price:3400, oldPrice:4200, rating:4.8, verified:true, image:'🎧', category:'Electronics' },
+  { _id:'3', name:'Yirgacheffe Coffee 1kg', description:'Freshly roasted, fruity & floral', price:450, oldPrice:600, rating:4.9, verified:true, image:'☕', category:'Food' },
+  { _id:'4', name:'Mesob Basket', description:'Handwoven serving basket', price:340, oldPrice:450, rating:4.7, verified:true, image:'🧺', category:'Home' },
+  { _id:'5', name:'Sheba Gold Honey', description:'Pure raw highland honey', price:280, oldPrice:350, rating:4.8, verified:true, image:'🍯', category:'Food' },
+  { _id:'6', name:'Opal Ring', description:'Ethiopian opal, sterling silver', price:2100, oldPrice:2600, rating:4.9, verified:true, image:'💍', category:'Fashion' },
+  { _id:'7', name:'Car Tool Kit', description:'42-piece emergency kit', price:1500, oldPrice:1900, rating:4.6, verified:false, image:'🔧', category:'Tools' },
+  { _id:'8', name:'Amharic Novel', description:'Bestselling fiction', price:220, oldPrice:300, rating:4.7, verified:false, image:'📚', category:'Books' },
+];}
+
+async function fetchProducts(){
+  try {
+    const res = await fetch(`${API}/products`);
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    state.products = Array.isArray(data) ? data : getMockProducts();
+  } catch(e) {
+    state.products = getMockProducts();
+    toast('Demo mode — server not reachable', 'info');
+  }
+  renderAll();
+}
+
+function imgHTML(p){
+  if (p.image && (p.image.startsWith('http') || p.image.startsWith('/'))) return `<img src="${p.image}" alt=""/>`;
+  return p.image || '📦';
+}
+function cardHTML(p){
+  const pastel = ['#e8f5ee','#e0e7ff','#fef3c7','#fce7f3'][ (p._id.charCodeAt(0)||65) % 4 ];
+  return `<div class="prod-card">
+    ${p.verified || p.seller ? '<span class="verified-badge">Verified</span>' : ''}
+    <div class="prod-img" style="background:${pastel}">${imgHTML(p)}</div>
+    <div class="prod-body">
+      <h3>${p.name}</h3>
+      <div class="price-row"><span class="now">ETB ${Number(p.price).toLocaleString()}</span>
+      ${p.oldPrice ? `<span class="old">${Number(p.oldPrice).toLocaleString()}</span>` : ''}</div>
+      <div class="rating">★★★★★ ${p.rating || '4.8'}</div>
+      <button class="btn-add-cart" data-id="${p._id}">Add to cart</button>
+    </div>
+  </div>`;
+}
+function renderAll(){
+  $('#featuredGrid').innerHTML = state.products.slice(0,6).map(cardHTML).join('');
+  renderExplore();
+  bindAddButtons();
+}
+function renderExplore(){
+  let list = state.products;
+  if (state.filter) list = list.filter(p => p.category === state.filter);
+  if (state.search) list = list.filter(p => p.name.toLowerCase().includes(state.search.toLowerCase()));
+  $('#exploreGrid').innerHTML = list.length ? list.map(cardHTML).join('') : '<p style="grid-column:1/-1;text-align:center;color:#6b7280">No products found.</p>';
+  bindAddButtons();
+}
+function bindAddButtons(){
+  document.querySelectorAll('.btn-add-cart').forEach(b => b.onclick = () => {
+    const p = state.products.find(x => x._id === b.dataset.id);
+    if (p) addToCart(p);
+  });
+}
+const CATEGORIES = ['Fashion','Electronics','Home','Food','Auto','Books','Tools','More'];
+$('#catGrid').innerHTML = CATEGORIES.map(c => `<div class="cat-card" data-cat="${c}">${c}</div>`).join('');
+$('#catChips').innerHTML = `<button class="chip" data-cat="">All</button>` + CATEGORIES.map(c => `<button class="chip" data-cat="${c}">${c}</button>`).join('');
+document.querySelectorAll('.cat-card').forEach(c => c.onclick = () => { state.filter = c.dataset.cat === 'More' ? null : c.dataset.cat; showView('explore'); syncChips(); renderExplore(); });
+document.querySelectorAll('.chip').forEach(c => c.onclick = () => { state.filter = c.dataset.cat || null; syncChips(); renderExplore(); });
+function syncChips(){ document.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c.dataset.cat === (state.filter||''))); }
+
+function showView(name){
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  $('#view-'+name).classList.add('active');
+  document.querySelectorAll('.bottom-nav button').forEach(b => b.classList.toggle('active', b.dataset.view === name));
+  window.scrollTo(0,0);
+}
+document.querySelectorAll('.bottom-nav button').forEach(b => b.onclick = () => {
+  const v = b.dataset.view;
+  if (v === 'sell') return openSell();
+  if (v === 'chat') { if(!state.user){ toast('Sign in to chat','error'); openAuth(); return; } showView('chat'); }
+  else showView(v);
+  if (v === 'profile') renderProfile();
+});
+$('#heroSellBtn').onclick = () => openSell();
+$('#heroBrowseBtn').onclick = () => showView('explore');
+$('#searchBtn').onclick = () => { state.search = $('#searchInput').value.trim(); showView('explore'); renderExplore(); };
+$('#searchInput').addEventListener('keypress', e => { if(e.key==='Enter') $('#searchBtn').click(); });
+
+function addToCart(p){
+  const ex = state.cart.find(i => i._id === p._id);
+  ex ? ex.qty++ : state.cart.push({...p, qty:1});
+  updateCartUI(); toast(`${p.name} added! 🛍️`,'success');
+}
+function updateCartUI(){
+  const n = state.cart.reduce((s,i)=>s+i.qty,0);
+  $('#cartBadge').textContent = n;
+  $('#cartTotal').textContent = 'ETB ' + state.cart.reduce((s,i)=>s+i.price*i.qty,0).toLocaleString();
+  $('#cartItems').innerHTML = state.cart.length ? state.cart.map(i => `
+    <div class="cart-item">
+      <div class="cart-item-icon">${imgHTML(i)}</div>
+      <div class="cart-item-info"><h4>${i.name}</h4><div style="color:#0e6b47;font-weight:700;font-size:.85rem">ETB ${(i.price*i.qty).toLocaleString()}</div></div>
+      <div class="qty-controls">
+        <button onclick="updateQty('${i._id}',-1)">−</button><span>${i.qty}</span><button onclick="updateQty('${i._id}',1)">+</button>
+      </div>
+    </div>`).join('') : '<p style="text-align:center;color:#6b7280;padding:2rem 0">Cart is empty</p>';
+}
+window.updateQty = (id,d) => { const i = state.cart.find(x=>x._id===id); if(!i) return; i.qty+=d; if(i.qty<=0) state.cart = state.cart.filter(x=>x._id!==id); updateCartUI(); };
+$('#cartBtn').onclick = () => $('#cartSidebar').classList.add('open');
+$('#cartClose').onclick = () => $('#cartSidebar').classList.remove('open');
+
+$('#checkoutBtn').onclick = async () => {
+  if (!state.user) { toast('Sign in to checkout','error'); openAuth(); return; }
+  if (!state.cart.length) return;
+  try {
+    const res = await fetch(`${API}/orders`, { method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${state.token}`},
+      body: JSON.stringify({ items: state.cart.map(i=>({productId:i._id,name:i.name,price:i.price,qty:i.qty})), total: state.cart.reduce((s,i)=>s+i.price*i.qty,0) })});
+    if (!res.ok) throw new Error('Checkout failed');
+    state.lastOrder = await res.json();
+    state.cart = []; updateCartUI(); $('#cartSidebar').classList.remove('open');
+    openPayment(state.lastOrder);
+  } catch(e){ toast('Checkout error: '+e.message,'error'); }
+};
+
+let currentPaymentId = null;
+function openPayment(order){
+  $('#paymentAmount').textContent = 'ETB ' + order.total.toLocaleString();
+  $('#paymentStatus').innerHTML = ''; $('#confirmPaymentBtn').style.display='none'; $('#whatsappBtn').style.display='none';
+  $('#paymentMethods').style.display='grid';
+  $('#paymentOverlay').classList.add('open');
+}
+document.querySelectorAll('.payment-method').forEach(b => b.onclick = async () => {
+  $('#paymentStatus').innerHTML = '⏳ Initializing ' + b.dataset.method.toUpperCase() + '...';
+  try {
+    const res = await fetch(`${API}/payments/initialize`, { method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${state.token}`},
+      body: JSON.stringify({ orderId: state.lastOrder._id, method: b.dataset.method })});
+    const d = await res.json(); if(!res.ok) throw new Error(d.message);
+    currentPaymentId = d.paymentId;
+    if (d.checkout_url) return window.location.href = d.checkout_url;
+    $('#paymentMethods').style.display='none';
+    $('#paymentStatus').innerHTML = `📱 ${b.dataset.method.toUpperCase()} payment initiated.<br><small>(Demo mode — confirm below)</small>`;
+    $('#confirmPaymentBtn').style.display='block';
+  } catch(e){ $('#paymentStatus').innerHTML = '❌ '+e.message; }
+});
+$('#confirmPaymentBtn').onclick = async () => {
+  $('#paymentStatus').innerHTML = '⏳ Verifying...';
+  const res = await fetch(`${API}/payments/verify/${currentPaymentId}`, { method:'POST', headers:{'Authorization':`Bearer ${state.token}`}});
+  if (res.ok) {
+    $('#paymentStatus').innerHTML = '✅ Payment successful!';
+    $('#confirmPaymentBtn').style.display='none'; $('#whatsappBtn').style.display='block';
+    toast('Payment confirmed! 🎉','success'); fetchOrders();
+  } else $('#paymentStatus').innerHTML = '❌ Verification failed';
+};
+$('#whatsappBtn').onclick = () => {
+  const o = state.lastOrder;
+  const msg = `🇪🇹 *New EthioMarket Order!*\n📦 #${o._id.slice(-8)}\n${o.items.map(i=>`• ${i.name} x${i.qty}`).join('\n')}\n💰 Total: ETB ${o.total.toLocaleString()}\n✅ Payment confirmed`;
+  window.open('https://wa.me/251911234567?text='+encodeURIComponent(msg),'_blank');
+};
+
+function openAuth(){ $('#authOverlay').classList.add('open'); }
+$('#authClose').onclick = () => $('#authOverlay').classList.remove('open');
+$('#authToggleLink').onclick = () => { state.isLogin = !state.isLogin; updateAuthForm(); };
+function updateAuthForm(){
+  $('#authTitle').textContent = state.isLogin ? 'Welcome Back' : 'Join EthioMarket';
+  $('#authSubmit').textContent = state.isLogin ? 'Sign In' : 'Create Account';
+  $('#authName').style.display = state.isLogin ? 'none' : 'block';
+  $('#authToggleText').textContent = state.isLogin ? "Don't have an account?" : 'Already have an account?';
+  $('#authToggleLink').textContent = state.isLogin ? 'Create one' : 'Sign in';
+}
+$('#authForm').onsubmit = async e => {
+  e.preventDefault();
+  const payload = { email: $('#authEmail').value.trim(), password: $('#authPassword').value.trim() };
+  if (!state.isLogin) payload.name = $('#authName').value.trim();
+  try {
+    const res = await fetch(`${API}/auth/${state.isLogin?'login':'register'}`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+    const d = await res.json(); if(!res.ok) throw new Error(d.message);
+    state.token = d.token; state.user = d.user;
+    localStorage.setItem('ethio_token', d.token); localStorage.setItem('ethio_user', JSON.stringify(d.user));
+    $('#authOverlay').classList.remove('open');
+    toast(`Selam, ${d.user.name}! 🇪🇹`,'success');
+    fetchOrders(); renderProfile();
+  } catch(err){ $('#authError').textContent = err.message; }
+};
+function logout(){ state.user=null; state.token=null; localStorage.removeItem('ethio_token'); localStorage.removeItem('ethio_user'); renderProfile(); toast('Logged out','info'); }
+
+function openSell(){ if(!state.user){ toast('Sign in to sell','error'); openAuth(); return; } $('#sellOverlay').classList.add('open'); }
+$('#sellClose').onclick = () => $('#sellOverlay').classList.remove('open');
+$('#sellImage').onchange = e => { const f = e.target.files[0]; if(!f) return; const r = new FileReader(); r.onload = ev => $('#imagePreview').innerHTML = `<img src="${ev.target.result}" style="max-width:100px;border-radius:10px"/>`; r.readAsDataURL(f); };
+$('#sellForm').onsubmit = async e => {
+  e.preventDefault();
+  const fd = new FormData();
+  fd.append('name', $('#sellName').value.trim());
+  fd.append('description', $('#sellDesc').value.trim());
+  fd.append('price', parseFloat($('#sellPrice').value));
+  fd.append('category', $('#sellCategory').value);
+  const f = $('#sellImage').files[0];
+  if (f) fd.append('image', f);
+  try {
+    const res = await fetch(`${API}/products`, { method:'POST', headers:{'Authorization':`Bearer ${state.token}`}, body: fd });
+    const d = await res.json(); if(!res.ok) throw new Error(d.message);
+    $('#sellOverlay').classList.remove('open'); $('#sellForm').reset(); $('#imagePreview').innerHTML='';
+    toast('🎉 Product published!','success'); fetchProducts();
+  } catch(err){ $('#sellError').textContent = err.message; }
+};
+
+async function sendChat(){
+  const txt = $('#chatInput').value.trim(); if(!txt) return;
+  const box = $('#chatMessages');
+  box.innerHTML += `<div class="msg user">${txt}</div>`; $('#chatInput').value='';
+  box.innerHTML += `<div class="msg ai" id="typing">🤖 AI thinking...</div>`; box.scrollTop = box.scrollHeight;
+  try {
+    const res = await fetch(`${API}/chat`, { method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${state.token}`}, body: JSON.stringify({message: txt})});
+    const d = await res.json();
+    const t = document.getElementById('typing'); if (t) t.remove();
+    box.innerHTML += `<div class="msg ai">${d.reply}</div>`; box.scrollTop = box.scrollHeight;
+    if (d.actionTaken) fetchOrders();
+  } catch(e){ const t = document.getElementById('typing'); if (t) t.remove(); box.innerHTML += `<div class="msg ai">❌ Server not reachable.</div>`; }
+}
+$('#chatSend').onclick = sendChat;
+$('#chatInput').addEventListener('keypress', e => { if(e.key==='Enter') sendChat(); });
+
+async function fetchOrders(){
+  if(!state.token) return;
+  try { const res = await fetch(`${API}/orders`, { headers:{'Authorization':`Bearer ${state.token}`}}); state.orders = await res.json(); } catch(e){ state.orders = []; }
+}
+function renderProfile(){
+  const el = $('#profileContent');
+  if (!state.user) { el.innerHTML = `<div class="profile-card"><div class="avatar">👤</div><h3>Welcome!</h3><p style="color:#6b7280;font-size:.85rem;margin:.5rem 0 1rem">Sign in to buy & sell</p><button class="btn-full" onclick="openAuth()">Sign In / Register</button></div>`; return; }
+  el.innerHTML = `
+    <div class="profile-card">
+      <div class="avatar">${state.user.name.charAt(0).toUpperCase()}</div>
+      <h3>${state.user.name}</h3>
+      <p style="color:#6b7280;font-size:.85rem">${state.user.email}</p>
+      <button class="btn-full" style="background:#ef4444;margin-top:1rem" onclick="logout()">Logout</button>
+    </div>
+    <h2 class="sec-label">MY ORDERS</h2>
+    ${state.orders.length ? state.orders.map(o => `<div class="order-card">
+      <div style="display:flex;justify-content:space-between"><strong>#${o._id.slice(-8)}</strong><span class="order-status">${o.status}</span></div>
+      <div style="font-size:.85rem;color:#6b7280;margin:.4rem 0">${o.items.map(i=>`${i.name} ×${i.qty}`).join(', ')}</div>
+      <strong style="color:#0e6b47">ETB ${o.total.toLocaleString()}</strong>
+    </div>`).join('') : '<p style="text-align:center;color:#6b7280">No orders yet.</p>'}`;
+}
+window.openAuth = openAuth; window.logout = logout;
+
+if (localStorage.getItem('ethio_theme') === 'dark') document.body.classList.add('dark');
+$('#themeBtn').onclick = () => {
+  document.body.classList.toggle('dark');
+  localStorage.setItem('ethio_theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+};
+
+const I18N = {
+  en: { hero:'Buy & sell anything — across Ethiopia & the world', heroSub:'Dropshipping · All Ethiopian banks · Passport verified', startSelling:'Start selling ↗', browse:'Browse stores', search:'Search products, sellers...', payments:'Accepted payments', categories:'CATEGORIES', featured:'FEATURED PRODUCTS', home:'Home', explore:'Explore', sell:'Sell', messages:'Messages', profile:'Profile' },
+  am: { hero:'የሚፈልትን ይግዙ እና ይሸጡ — በመላው ኢትዮጵያ እና ዓለም', heroSub:'ድሮፕሺግ · ሁሉም የኢትዮጵያ ባንኮች · ፓስርት የተረገጠ', startSelling:'ሽያ ጀምር ↗', browse:'ሱቆችን ይመልከቱ', search:'ምርቶችን፣ ሻጮችን ይፈልጉ...', payments:'የተቀበሉ የክፍያ ዘዴዎች', categories:'ምድቦች', featured:'ተመራጭ ርቶች', home:'መነሻ', explore:'አስሱ', sell:'ሸጥ', messages:'መልዕክቶች', profile:'መገለጫ' }
+};
+function setLang(lang){
+  state.lang = lang;
+  localStorage.setItem('ethio_lang', lang);
+  const t = I18N[lang];
+  document.querySelector('.hero h1').textContent = t.hero;
+  document.querySelector('.hero p').textContent = t.heroSub;
+  $('#heroSellBtn').textContent = t.startSelling;
+  $('#heroBrowseBtn').textContent = t.browse;
+  $('#searchInput').placeholder = t.search;
+  document.querySelector('.payments-strip .label').textContent = t.payments;
+  const labels = document.querySelectorAll('#view-home .sec-label');
+  if (labels[0]) labels[0].textContent = t.categories;
+  if (labels[1]) labels[1].textContent = t.featured;
+  const keys = ['home','explore','sell','messages','profile'];
+  const icons = ['fa-home','fa-compass','fa-plus-circle','fa-comment-dots','fa-user'];
+  document.querySelectorAll('.bottom-nav button').forEach((b,i) => {
+    const active = b.classList.contains('active');
+    b.innerHTML = `<i class="fas ${icons[i]}"></i>${t[keys[i]]}` + (i===3 ? '<span class="nav-dot"></span>' : '');
+    if (active) b.classList.add('active');
+  });
+  $('#langBtn').textContent = lang === 'en' ? 'አማ' : 'EN';
+}
+$('#langBtn').onclick = () => setLang(state.lang === 'en' ? 'am' : 'en');
+setLang(localStorage.getItem('ethio_lang') || 'en');
+
+$('#voiceBtn').onclick = () => {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return toast('Voice search not supported in this browser', 'error');
+  const rec = new SR();
+  rec.lang = state.lang === 'am' ? 'am-ET' : 'en-US';
+  toast('🎤 Listening...', 'info');
+  rec.onresult = e => { $('#searchInput').value = e.results[0][0].transcript; $('#searchBtn').click(); };
+  rec.start();
+};
+
+(async function init(){
+  const t = localStorage.getItem('ethio_token'), u = localStorage.getItem('ethio_user');
+  if (t && u) { state.token = t; state.user = JSON.parse(u); await fetchOrders(); }
+  await fetchProducts(); updateCartUI(); renderProfile();
+})();
+console.log('🇪🇹 EthioMarket mobile loaded!');
+</script>
+</body>
+  </html>
