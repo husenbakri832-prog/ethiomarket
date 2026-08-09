@@ -13,8 +13,13 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-const uploadsDir = path.join(__dirname, 'public', 'uploads');
-if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+let uploadsDir;
+try {
+  uploadsDir = path.join(__dirname, 'public', 'uploads');
+  if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+} catch (e) {
+  uploadsDir = require('os').tmpdir();
+}
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, uploadsDir),
   filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname.replace(/\s/g, '_'))
@@ -193,22 +198,6 @@ app.post('/api/payments/initialize', auth, async (req, res) => {
     if (!order) return res.status(404).json({ message: 'Order not found' });
     const payment = new Payment({ user: req.user, order: orderId, amount: order.total, method, transactionRef: 'TX-' + Date.now() });
     await payment.save();
-
-    if (method === 'chapa' && process.env.CHAPA_SECRET_KEY) {
-      const chapaRes = await fetch('https://api.chapa.co/v1/transaction/initialize', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.CHAPA_SECRET_KEY}` },
-        body: JSON.stringify({
-          amount: order.total, currency: 'ETB', email: 'customer@ethiomarket.com',
-          first_name: 'Ethio', last_name: 'Market', tx_ref: payment.transactionRef,
-          callback_url: `${req.protocol}://${req.get('host')}/api/payments/chapa-callback`,
-          return_url: `${req.protocol}://${req.get('host')}/`
-        })
-      });
-      const chapaData = await chapaRes.json();
-      if (chapaData.status === 'success') return res.json({ checkout_url: chapaData.data.checkout_url, paymentId: payment._id });
-      return res.status(400).json({ message: 'Chapa initialization failed' });
-    }
     res.json({ paymentId: payment._id, simulation: true, message: `${method.toUpperCase()} payment initiated.` });
   } catch (e) { res.status(500).json({ message: 'Payment initialization failed' }); }
 });
@@ -221,20 +210,6 @@ app.post('/api/payments/verify/:paymentId', auth, async (req, res) => {
     await Order.findByIdAndUpdate(payment.order, { status: 'shipped' });
     res.json({ message: 'Payment successful!', status: 'success' });
   } catch (e) { res.status(500).json({ message: 'Verification failed' }); }
-});
-
-app.get('/api/payments/chapa-callback', async (req, res) => {
-  try {
-    const verifyRes = await fetch(`https://api.chapa.co/v1/transaction/verify/${req.query.tx_ref}`, {
-      headers: { 'Authorization': `Bearer ${process.env.CHAPA_SECRET_KEY}` }
-    });
-    const data = await verifyRes.json();
-    if (data.status === 'success') {
-      const payment = await Payment.findOne({ transactionRef: req.query.tx_ref });
-      if (payment) { payment.status = 'success'; await payment.save(); await Order.findByIdAndUpdate(payment.order, { status: 'shipped' }); }
-    }
-    res.redirect('/');
-  } catch (e) { res.redirect('/'); }
 });
 
 app.get('/api/admin/stats', adminAuth, async (req, res) => {
@@ -266,4 +241,7 @@ app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.ht
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 EthioMarket running at http://localhost:${PORT}`));
+if (require.main === module) {
+  app.listen(PORT, () => console.log(`🚀 EthioMarket running at http://localhost:${PORT}`));
+}
+module.exports = app;
